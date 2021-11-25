@@ -27,6 +27,14 @@ from typing import Optional
 
 from cachelib.file import FileSystemCache
 from celery.schedules import crontab
+#######################################################################
+# Added by Joe
+
+from flask_appbuilder.security.manager import AUTH_OAUTH
+
+from custom_sso_security_manager import CustomSsoSecurityManager
+CUSTOM_SECURITY_MANAGER = CustomSsoSecurityManager
+#######################################################################
 
 logger = logging.getLogger()
 
@@ -112,3 +120,38 @@ try:
     )
 except ImportError:
     logger.info("Using default Docker config...")
+
+#######################################################################
+# Added by Joe
+
+AUTH_TYPE = AUTH_OAUTH
+OAUTH_PROVIDERS = [
+    {   'name':'azure',
+        'token_key':'access_token', # Name of the token in the response of access_token_url
+        'icon':'fa-address-card',   # Icon for the provider
+        'remote_app': {
+            'client_id':'00000000-0000-0000-0000-000000000000',  # Client Id (Identify Superset application)
+            'client_secret':'0000000000000000000000000000000000000', # Secret for this Client Id (Identify Superset application)
+            'client_kwargs':{
+                'scope': 'openid profile email'               # Scope for the Authorization
+            },
+            'access_token_method':'POST',    # HTTP Method to call access_token_url
+            'access_token_params':{        # Additional parameters for calls to access_token_url
+                'client_id':'00000000-0000-0000-0000-000000000000'
+            },
+            'access_token_headers':{    # Additional headers for calls to access_token_url
+                'Authorization': 'Basic Base64EncodedClientIdAndSecret'
+            },
+            #'api_base_url':'https://graph.microsoft.com/oidc/',
+            'api_base_url':'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/',
+            'access_token_url':'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/oauth2/v2.0/token',
+            'authorize_url':'https://login.microsoftonline.com/00000000-0000-0000-0000-000000000000/oauth2/v2.0/authorize'
+        }
+    }
+]
+
+AUTH_ROLE_ADMIN = 'Admin'
+AUTH_ROLE_PUBLIC = 'Public'
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "Admin"
+#######################################################################
